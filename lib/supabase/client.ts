@@ -1,4 +1,6 @@
-import { createBrowserClient } from "@supabase/ssr";
+// Cria o cliente Supabase para uso no browser (componentes cliente)
+// Usado em páginas com 'use client' — login, formulários, chat, etc.
+import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
   return createBrowserClient(

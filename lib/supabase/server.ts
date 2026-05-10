@@ -1,34 +1,32 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+// Cria o cliente Supabase para uso no servidor (Server Components)
+// Usado em páginas sem 'use client' — leitura de dados protegidos, SSR, etc.
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-/**
- * Especially important if using Fluid compute: Don't put this client in a
- * global variable. Always create a new client within each function when using
- * it.
- */
 export async function createClient() {
-  const cookieStore = await cookies();
+  // Lê os cookies do browser para manter a sessão do utilizador
+  const cookieStore = await cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        // Devolve todos os cookies actuais
         getAll() {
-          return cookieStore.getAll();
+          return cookieStore.getAll()
         },
+        // Guarda cookies novos (sessão, token, etc.)
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
+              cookieStore.set(name, value, options)
+            )
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have proxy refreshing
-            // user sessions.
+            // Ignorar erros de cookies em Server Components de leitura
           }
         },
       },
-    },
-  );
+    }
+  )
 }
