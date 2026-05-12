@@ -1,30 +1,37 @@
-import { createClient } from "@/lib/supabase/server";
-import { type EmailOtpType } from "@supabase/supabase-js";
-import { redirect } from "next/navigation";
-import { type NextRequest } from "next/server";
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const token_hash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
-  const next = searchParams.get("next") ?? "/";
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/'
 
-  if (token_hash && type) {
-    const supabase = await createClient();
+  if (code) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    const { error } = await supabase.auth.verifyOtp({
-      type,
-      token_hash,
-    });
     if (!error) {
-      // redirect user to specified redirect URL or root of app
-      redirect(next);
-    } else {
-      // redirect the user to an error page with some instructions
-      redirect(`/auth/error?error=${error?.message}`);
+      // Buscar tipo do utilizador e redirecionar
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: perfil } = await supabase
+          .from('perfis')
+          .select('tipo')
+          .eq('user_id', user.id)
+          .single()
+
+        if (perfil?.tipo === 'admin') {
+          return NextResponse.redirect(`${origin}/admin`)
+        } else if (perfil?.tipo === 'tecnico') {
+          return NextResponse.redirect(`${origin}/tecnico/dashboard`)
+        } else {
+          return NextResponse.redirect(`${origin}/cliente/dashboard`)
+        }
+      }
     }
   }
 
-  // redirect the user to an error page with some instructions
-  redirect(`/auth/error?error=No token hash or type`);
+  // Se algo correu mal redireciona para erro
+  return NextResponse.redirect(`${origin}/error`)
 }
