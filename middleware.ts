@@ -25,18 +25,52 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isCliente = request.nextUrl.pathname.startsWith('/cliente')
-  const isTecnico = request.nextUrl.pathname.startsWith('/tecnico') &&
-                    !request.nextUrl.pathname.startsWith('/tecnico/')
-  const isAdmin   = request.nextUrl.pathname.startsWith('/admin')
+  const pathname = request.nextUrl.pathname
 
-  if ((isCliente || isTecnico || isAdmin) && !user) {
+  // Rotas protegidas
+  const isCliente = pathname.startsWith('/cliente')
+  const isAdmin   = pathname.startsWith('/admin')
+
+  // Rotas protegidas do técnico (exclui /tecnico/[id] que é público)
+  const rotasTecnicoProtegidas = [
+    '/tecnico/dashboard',
+    '/tecnico/agenda',
+    '/tecnico/servicos',
+    '/tecnico/horarios',
+    '/tecnico/chat',
+    '/tecnico/estatisticas',
+    '/tecnico/selos',
+    '/tecnico/verificacao',
+    '/tecnico/denuncias',
+    '/tecnico/perfil',
+  ]
+  const isTecnicoProtegido = rotasTecnicoProtegidas.some(r => pathname.startsWith(r))
+
+  // Redireciona para login se não autenticado
+  if ((isCliente || isTecnicoProtegido || isAdmin) && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // Apenas admins acedem ao painel admin
+  if (isAdmin && user) {
+    const { data: perfil } = await supabase
+      .from('perfis')
+      .select('tipo')
+      .eq('user_id', user.id)
+      .single()
+
+    if (perfil?.tipo !== 'admin') {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/cliente/:path*', '/tecnico/:path*', '/admin/:path*'],
+  matcher: [
+    '/cliente/:path*',
+    '/tecnico/:path*',
+    '/admin/:path*',
+  ],
 }
