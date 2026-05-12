@@ -104,6 +104,7 @@ export function useAuth() {
             disponivel: false,
           })
         }
+        window.open('https://wa.me/244938080177?text=Olá,%20acabei%20de%20me%20registar%20no%20ServiJá%20como%20técnico.%20O%20meu%20nome%20é%20' + encodeURIComponent(dados.nome) + '.%20Quero%20enviar%20os%20meus%20documentos%20para%20verificação.', '_blank')
         router.push('/tecnico/verificacao')
       } else {
         router.push('/cliente/dashboard')
