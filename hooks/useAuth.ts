@@ -18,26 +18,39 @@ export function useAuth() {
         email,
         password,
       })
+
       if (error) {
+        // Erro específico de email não confirmado
+        if (error.message.includes('Email not confirmed')) {
+          setErro('Confirma o teu email antes de entrar. Verifica a caixa de entrada.')
+          return false
+        }
         setErro('Email ou password incorrectos.')
         return false
       }
-      // Buscar tipo do utilizador
+
+      // Buscar tipo e status do utilizador
       const { data: perfil } = await supabase
         .from('perfis')
         .select('tipo, status')
         .eq('user_id', data.user.id)
         .single()
 
-      if (perfil?.status === 'bloqueado') {
-        setErro('A tua conta foi suspensa. Contacta o suporte.')
+      if (!perfil) {
+        setErro('Perfil não encontrado. Contacta o suporte.')
+        await supabase.auth.signOut()
+        return false
+      }
+
+      if (perfil.status === 'bloqueado') {
+        setErro('A tua conta foi suspensa. Contacta o suporte via WhatsApp.')
         await supabase.auth.signOut()
         return false
       }
 
       // Redirecionar conforme o tipo
-      if (perfil?.tipo === 'admin') router.push('/admin')
-      else if (perfil?.tipo === 'tecnico') router.push('/tecnico/dashboard')
+      if (perfil.tipo === 'admin') router.push('/admin')
+      else if (perfil.tipo === 'tecnico') router.push('/tecnico/dashboard')
       else router.push('/cliente/dashboard')
 
       return true
@@ -60,55 +73,43 @@ export function useAuth() {
     setLoading(true)
     setErro(null)
     try {
-      // Criar conta no Supabase Auth
+      // Criar conta passando dados como metadata
+      // O trigger cria o perfil automaticamente após confirmação do email
       const { data, error } = await supabase.auth.signUp({
         email: dados.email,
         password: dados.password,
+        options: {
+          data: {
+            nome_completo: dados.nome,
+            tipo: dados.tipo,
+            telefone: dados.telefone,
+          }
+        }
       })
+
       if (error) {
+        if (error.message.includes('already registered')) {
+          setErro('Este email já está registado. Faz login ou recupera a password.')
+          return false
+        }
         setErro('Erro ao criar conta. Verifica o email.')
         return false
       }
+
       if (!data.user) return false
 
-      // Criar perfil na tabela perfis
-      const { error: erroP } = await supabase
-        .from('perfis')
-        .insert({
-          user_id: data.user.id,
-          tipo: dados.tipo,
-          nome_completo: dados.nome,
-          email: dados.email,
-          telefone: dados.telefone,
-          status: 'ativo',
-        })
-
-      if (erroP) {
-        setErro('Erro ao criar perfil.')
-        return false
-      }
-
-      // Se for técnico criar entrada na tabela tecnicos
+      // Redirecionar conforme o tipo
       if (dados.tipo === 'tecnico') {
-        const { data: perfil } = await supabase
-          .from('perfis')
-          .select('id')
-          .eq('user_id', data.user.id)
-          .single()
-
-        if (perfil) {
-          await supabase.from('tecnicos').insert({
-            perfil_id: perfil.id,
-            selo: 'novo',
-            status_verificacao: 'aguardando',
-            disponivel: false,
-          })
-        }
-        window.open('https://wa.me/244938080177?text=Olá,%20acabei%20de%20me%20registar%20no%20ServiJá%20como%20técnico.%20O%20meu%20nome%20é%20' + encodeURIComponent(dados.nome) + '.%20Quero%20enviar%20os%20meus%20documentos%20para%20verificação.', '_blank')
+        // Abrir WhatsApp para enviar documentos
+        window.open(
+          `https://wa.me/244938080177?text=Olá,%20registei-me%20no%20ServiJá%20como%20técnico.%20O%20meu%20nome%20é%20${encodeURIComponent(dados.nome)}.%20Quero%20enviar%20os%20meus%20documentos%20para%20verificação.`,
+          '_blank'
+        )
         router.push('/tecnico/verificacao')
       } else {
-        router.push('/cliente/dashboard')
+        router.push('/sign-up-success')
       }
+
       return true
     } catch {
       setErro('Erro inesperado. Tenta novamente.')
