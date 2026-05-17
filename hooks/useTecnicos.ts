@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export interface Tecnico {
@@ -28,13 +28,15 @@ export function useTecnicos(
   const [tecnicos, setTecnicos] = useState<Tecnico[]>([])
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const ultimaBuscaRef = useRef<string>('')
 
-  useEffect(() => {
+  const buscar = useCallback(async () => {
     if (!lat || !lng) return
-    buscar()
-  }, [lat, lng, categoriaSlug])
-
-  async function buscar() {
+    
+    const chaveBusca = `${lat}-${lng}-${categoriaSlug || 'todos'}`
+    if (ultimaBuscaRef.current === chaveBusca) return
+    ultimaBuscaRef.current = chaveBusca
+    
     setLoading(true)
     setErro(null)
     try {
@@ -58,7 +60,13 @@ export function useTecnicos(
     } finally {
       setLoading(false)
     }
-  }
+  }, [lat, lng, categoriaSlug])
+
+  useEffect(() => {
+    if (lat && lng) {
+      buscar()
+    }
+  }, [lat, lng, categoriaSlug, buscar])
 
   return { tecnicos, loading, erro, buscar }
 }

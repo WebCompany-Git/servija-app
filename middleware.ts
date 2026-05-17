@@ -70,7 +70,16 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/cliente/:path*',
-    '/tecnico/:path*',
+    '/tecnico/dashboard/:path*',
+    '/tecnico/agenda/:path*',
+    '/tecnico/servicos/:path*',
+    '/tecnico/horarios/:path*',
+    '/tecnico/chat/:path*',
+    '/tecnico/estatisticas/:path*',
+    '/tecnico/selos/:path*',
+    '/tecnico/verificacao/:path*',
+    '/tecnico/denuncias/:path*',
+    '/tecnico/perfil/:path*',
     '/admin/:path*',
   ],
 }

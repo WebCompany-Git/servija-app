@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -14,12 +15,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-servi-50 to-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-servi-50 to-white flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
 
-        {/* Logo */}
+        {/* Logo - EXATAMENTE igual ao sign-up */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
+          <Link href="/" className="inline-flex items-center gap-2 justify-center">
             <div className="w-10 h-10 bg-servi-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold">SJ</span>
             </div>
@@ -28,25 +29,26 @@ export default function LoginPage() {
               <span className="text-ja-500">Já</span>
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-4">Bem-vindo de volta</h1>
-          <p className="text-gray-500 mt-1">Entra na tua conta</p>
+          <h1 className="text-2xl font-bold text-gray-900 mt-4">
+            Entrar na conta
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            O teu problema tem solução já
+          </p>
         </div>
 
-        {/* Formulário */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        {/* Card - EXATAMENTE igual ao sign-up */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
-          {/* Erro */}
           {erro && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-6">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">
               {erro}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Email
               </label>
               <input
@@ -55,55 +57,46 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="o-teu@email.com"
                 required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-servi-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-servi-500 text-sm"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Link href="/forgot-password" className="text-xs text-servi-600 hover:text-servi-700">
-                  Esqueceste?
-                </Link>
-              </div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-servi-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-servi-500 text-sm"
               />
             </div>
 
-            {/* Botão */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-servi-600 text-white py-3 rounded-xl font-semibold hover:bg-servi-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-servi-600 text-white py-3 rounded-xl font-semibold hover:bg-servi-700 transition-colors disabled:opacity-50 mt-1"
             >
               {loading ? 'A entrar...' : 'Entrar'}
             </button>
           </form>
 
-          {/* Registo */}
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-5">
             Não tens conta?{' '}
             <Link href="/sign-up" className="text-servi-600 font-medium hover:text-servi-700">
-              Regista-te grátis
+              Criar conta gratuita
             </Link>
           </p>
         </div>
 
-        {/* Suporte */}
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Precisas de ajuda?{' '}
+        <p className="text-center text-xs text-gray-400 mt-4">
+          Ajuda?{' '}
           <a href="https://wa.me/244938080177" target="_blank" rel="noopener noreferrer"
             className="text-servi-600 hover:text-servi-700">
-            Fala connosco no WhatsApp
+            WhatsApp 938 080 177
           </a>
         </p>
       </div>
