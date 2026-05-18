@@ -40,7 +40,6 @@ export function useAuth() {
         await supabase.auth.signOut()
         return false
       }
-      
       router.refresh()
       setTimeout(() => {
         if (perfil.tipo === 'admin') router.push('/admin')
@@ -85,11 +84,22 @@ export function useAuth() {
         return false
       }
       if (!data.user) return false
-      setLoading(false)
+
+      if (dados.tipo === 'tecnico') {
+        window.open(
+          `https://wa.me/244938080177?text=Olá,%20registei-me%20no%20ServiJá%20como%20técnico.%20Nome:%20${encodeURIComponent(dados.nome)}`,
+          '_blank'
+        )
+        router.push('/tecnico/verificacao')
+      } else {
+        router.push('/sign-up-success')
+      }
       return true
     } catch {
       setErro('Erro inesperado.')
       return false
+    } finally {
+      setLoading(false)
     }
   }
 
