@@ -1,0 +1,15 @@
+
+> dev
+> next dev --webpack
+
+▲ Next.js 16.2.4 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.154:3000
+- Environments: .env.local
+✓ Ready in 10.8s
+⚠ Attempted to load /data/data/com.termux/files/home/servija-app/node_modules/next/next-swc-fallback/@next/swc-android-arm-eabi/next-swc.android-arm-eabi.node, but it was not installed
+⚠ Attempted to load @next/swc-android-arm-eabi, but it was not installed
+  Skipping creating a lockfile at /data/data/com.termux/files/home/servija-app/.next/dev/lock because we're using WASM bindings
+- Cache Components enabled
+
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: Unable to snapshot resolve dependencies
