@@ -41,27 +41,59 @@ export default function SignUpPage() {
   function avancarPasso1(e: React.FormEvent) {
     e.preventDefault()
     setErroLocal(null)
-    if (password !== confirmar) { setErroLocal('As passwords não coincidem.'); return }
-    if (password.length < 6) { setErroLocal('Password com mínimo 6 caracteres.'); return }
-    if (tipo === 'tecnico') setPasso(2)
-    else handleRegistarCliente()
+    
+    if (password !== confirmar) {
+      setErroLocal('As passwords não coincidem.')
+      return
+    }
+    if (password.length < 6) {
+      setErroLocal('Password com mínimo 6 caracteres.')
+      return
+    }
+    
+    if (tipo === 'tecnico') {
+      setPasso(2)
+    } else {
+      handleRegistarCliente()
+    }
   }
 
   async function handleRegistarCliente() {
-    await registar({ email, password, nome, telefone, tipo })
+    console.log('📝 A registar cliente...')
+    const sucesso = await registar({ email, password, nome, telefone, tipo })
+    
+    if (!sucesso) {
+      console.log('❌ Registo falhou - ver erro acima')
+    } else {
+      console.log('✅ Registo bem-sucedido - a redirecionar...')
+    }
   }
 
   async function handleSubmitTecnico(e: React.FormEvent) {
     e.preventDefault()
     setErroLocal(null)
-    if (!categoria) { setErroLocal('Escolhe a tua categoria.'); return }
-    if (!bairro) { setErroLocal('Indica o teu bairro.'); return }
+    
+    if (!categoria) {
+      setErroLocal('Escolhe a tua categoria.')
+      return
+    }
+    if (!bairro) {
+      setErroLocal('Indica o teu bairro.')
+      return
+    }
 
+    console.log('📝 A registar técnico...')
     const sucesso = await registar({ email, password, nome, telefone, tipo })
+    
     if (sucesso) {
+      console.log('✅ A guardar dados do técnico...')
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
+      
       if (user) {
+        // Aguardar o trigger criar o perfil
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
         const { data: perfil } = await supabase
           .from('perfis')
           .select('id')
@@ -80,13 +112,11 @@ export default function SignUpPage() {
               .update({ documento_identidade: numeroBi })
               .eq('id', perfil.id)
           }
+          console.log('✅ Dados do técnico guardados')
         }
       }
-      // Abrir WhatsApp com mensagem pré-preenchida
-      window.open(
-        `https://wa.me/244938080177?text=Olá,%20registei-me%20no%20ServiJá%20como%20técnico.%20O%20meu%20nome%20é%20${encodeURIComponent(nome)}.%20Quero%20enviar%20os%20meus%20documentos%20para%20verificação.`,
-        '_blank'
-      )
+    } else {
+      console.log('❌ Registo de técnico falhou')
     }
   }
 

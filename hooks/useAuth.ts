@@ -50,6 +50,7 @@ export function useAuth() {
       return true
     } catch {
       setErro('Erro ao entrar. Tenta novamente.')
+      setLoading(false)
       return false
     }
   }
@@ -72,19 +73,38 @@ export function useAuth() {
             nome_completo: dados.nome,
             tipo: dados.tipo,
             telefone: dados.telefone,
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/auth/confirm`
         }
       })
+      
       if (error) {
-        if (error.message.includes('already registered')) {
+        console.error('❌ Erro Supabase:', error)
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           setErro('Este email já está registado.')
-          return false
+        } else if (error.message.includes('password')) {
+          setErro('Password inválida. Usa no mínimo 6 caracteres.')
+        } else if (error.message.includes('email')) {
+          setErro('Email inválido.')
+        } else {
+          setErro(`Erro: ${error.message}`)
         }
-        setErro('Erro ao criar conta.')
+        setLoading(false)
         return false
       }
-      if (!data.user) return false
+      
+      if (!data.user) {
+        console.error('❌ Utilizador não foi criado')
+        setErro('Erro ao criar utilizador. Tenta novamente.')
+        setLoading(false)
+        return false
+      }
 
+      console.log('✅ Utilizador criado:', data.user.email)
+
+      // Sucesso! Agora redireciona
+      setLoading(false)
+      
       if (dados.tipo === 'tecnico') {
         window.open(
           `https://wa.me/244938080177?text=Olá,%20registei-me%20no%20ServiJá%20como%20técnico.%20Nome:%20${encodeURIComponent(dados.nome)}`,
@@ -95,11 +115,12 @@ export function useAuth() {
         router.push('/sign-up-success')
       }
       return true
-    } catch {
-      setErro('Erro inesperado.')
-      return false
-    } finally {
+      
+    } catch (err: any) {
+      console.error('❌ Erro catch:', err)
+      setErro('Erro inesperado. Verifica a tua ligação à internet.')
       setLoading(false)
+      return false
     }
   }
 
