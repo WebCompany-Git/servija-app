@@ -97,7 +97,7 @@ export default function ClienteDashboard() {
             <Link href="/cliente/agendamentos" className="text-sm text-servi-600">Ver todos</Link>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
-            <span className="text-4xl mb-3 block">📋</span>
+            <span className="text-4xl mb-3 block"> 📋</span>
             <p className="font-semibold text-gray-900 text-sm mb-1">Ainda sem agendamentos</p>
             <p className="text-xs text-gray-500">Quando agendares um serviço aparece aqui</p>
           </div>
