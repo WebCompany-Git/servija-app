@@ -73,13 +73,11 @@ export function useAuth() {
             nome_completo: dados.nome,
             tipo: dados.tipo,
             telefone: dados.telefone,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`
+          }
         }
       })
-      
+
       if (error) {
-        console.error('❌ Erro Supabase:', error)
         if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           setErro('Este email já está registado.')
         } else if (error.message.includes('password')) {
@@ -92,19 +90,15 @@ export function useAuth() {
         setLoading(false)
         return false
       }
-      
+
       if (!data.user) {
-        console.error('❌ Utilizador não foi criado')
         setErro('Erro ao criar utilizador. Tenta novamente.')
         setLoading(false)
         return false
       }
 
-      console.log('✅ Utilizador criado:', data.user.email)
-
-      // Sucesso! Agora redireciona
       setLoading(false)
-      
+
       if (dados.tipo === 'tecnico') {
         window.open(
           `https://wa.me/244938080177?text=Olá,%20registei-me%20no%20ServiJá%20como%20técnico.%20Nome:%20${encodeURIComponent(dados.nome)}`,
@@ -112,12 +106,11 @@ export function useAuth() {
         )
         router.push('/tecnico/verificacao')
       } else {
-        router.push('/sign-up-success')
+        router.push('/cliente/dashboard')
       }
       return true
-      
-    } catch (err: any) {
-      console.error('❌ Erro catch:', err)
+
+    } catch {
       setErro('Erro inesperado. Verifica a tua ligação à internet.')
       setLoading(false)
       return false
