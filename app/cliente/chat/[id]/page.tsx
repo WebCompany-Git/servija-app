@@ -7,13 +7,15 @@ import Avatar from '@/components/ui/Avatar'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function ChatCliente() {
-  const { id } = useParams()
+  const params = useParams()
+  const id = params?.id as string
   const router = useRouter()
   const [info, setInfo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function carregar() {
+      if (!id) return
       const supabase = createClient()
       const { data } = await supabase
         .from('agendamentos')
@@ -29,13 +31,12 @@ export default function ChatCliente() {
       setInfo(data)
       setLoading(false)
     }
-    if (id) carregar()
+    carregar()
   }, [id])
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>
 
-  const tecnico = info?.tecnico
-  const perfilTecnico = tecnico?.perfil
+  const perfilTecnico = info?.tecnico?.perfil
 
   return (
     <div className="h-screen flex flex-col">
@@ -49,7 +50,7 @@ export default function ChatCliente() {
       </div>
       {info && perfilTecnico?.id && (
         <ChatWindow
-          agendamentoId={id as string}
+          agendamentoId={id}
           destinatarioId={perfilTecnico.id}
           destinatarioNome={perfilTecnico.nome_completo}
         />

@@ -11,21 +11,27 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function carregar() {
       const supabase = createClient()
-      const [clientes, tecnicos, agendamentos, pendentes, selos, denuncias] = await Promise.all([
-        supabase.from('perfis').select('id', { count: 'exact' }).eq('tipo', 'cliente'),
-        supabase.from('perfis').select('id', { count: 'exact' }).eq('tipo', 'tecnico'),
-        supabase.from('agendamentos').select('id', { count: 'exact' }),
-        supabase.from('tecnicos').select('id', { count: 'exact' }).eq('status_verificacao', 'aguardando'),
-        supabase.from('pedidos_selo').select('id', { count: 'exact' }).eq('status', 'pendente'),
-        supabase.from('denuncias').select('id', { count: 'exact' }).eq('status', 'pendente'),
-      ])
+
+      const { data: clientes } = await supabase
+        .from('perfis').select('id').eq('tipo', 'cliente')
+      const { data: tecnicos } = await supabase
+        .from('perfis').select('id').eq('tipo', 'tecnico')
+      const { data: agendamentos } = await supabase
+        .from('agendamentos').select('id')
+      const { data: pendentes } = await supabase
+        .from('tecnicos').select('id').eq('status_verificacao', 'aguardando')
+      const { data: selos } = await supabase
+        .from('pedidos_selo').select('id').eq('status', 'pendente')
+      const { data: denuncias } = await supabase
+        .from('denuncias').select('id').eq('status', 'pendente')
+
       setStats({
-        clientes: clientes.count || 0,
-        tecnicos: tecnicos.count || 0,
-        agendamentos: agendamentos.count || 0,
-        pendentes: pendentes.count || 0,
-        selos: selos.count || 0,
-        denuncias: denuncias.count || 0,
+        clientes: clientes?.length || 0,
+        tecnicos: tecnicos?.length || 0,
+        agendamentos: agendamentos?.length || 0,
+        pendentes: pendentes?.length || 0,
+        selos: selos?.length || 0,
+        denuncias: denuncias?.length || 0,
       })
       setLoading(false)
     }
@@ -55,7 +61,6 @@ export default function AdminDashboard() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
             { label: 'Clientes', valor: stats?.clientes, cor: 'text-servi-600' },
@@ -69,7 +74,6 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Acções urgentes */}
         <h2 className="font-bold text-gray-900 mb-3">Acções urgentes</h2>
         <div className="flex flex-col gap-3 mb-6">
           {[
@@ -90,7 +94,6 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Gestão */}
         <h2 className="font-bold text-gray-900 mb-3">Gestão</h2>
         <div className="grid grid-cols-2 gap-3">
           {[
