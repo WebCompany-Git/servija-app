@@ -1,6 +1,5 @@
-export const dynamic = 'force-dynamic';
-
 'use client'
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +7,7 @@ import ChatWindow from '@/components/chat/ChatWindow'
 import Avatar from '@/components/ui/Avatar'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
-export default function ChatCliente() {
+function ChatClienteContent() {
   const params = useParams()
   const id = params?.id as string
   const router = useRouter()
@@ -21,13 +20,7 @@ export default function ChatCliente() {
       const supabase = createClient()
       const { data } = await supabase
         .from('agendamentos')
-        .select(`
-          id, status,
-          tecnico:tecnicos(
-            id,
-            perfil:perfis!tecnicos_perfil_id_fkey(id, nome_completo, foto_url)
-          )
-        `)
+        .select(`id, status, tecnico:tecnicos(id, perfil:perfis!tecnicos_perfil_id_fkey(id, nome_completo, foto_url))`)
         .eq('id', id)
         .single()
       setInfo(data)
@@ -51,12 +44,12 @@ export default function ChatCliente() {
         </div>
       </div>
       {info && perfilTecnico?.id && (
-        <ChatWindow
-          agendamentoId={id}
-          destinatarioId={perfilTecnico.id}
-          destinatarioNome={perfilTecnico.nome_completo}
-        />
+        <ChatWindow agendamentoId={id} destinatarioId={perfilTecnico.id} destinatarioNome={perfilTecnico.nome_completo} />
       )}
     </div>
   )
+}
+
+export default function ChatClientePage() {
+  return <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>}><ChatClienteContent /></Suspense>
 }
