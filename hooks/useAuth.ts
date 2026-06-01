@@ -14,7 +14,8 @@ export function useAuth() {
     setErro(null)
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email, password,
+        email: email, 
+        password: password,
       })
       if (error) {
         if (error.message.includes('Email not confirmed')) {
@@ -27,12 +28,14 @@ export function useAuth() {
       const { data: perfil } = await supabase
         .from('perfis')
         .select('tipo, status')
-        .eq('user_id', data.user.id)
+        .eq('user_id', data.user.id) // Filtra pelo ID do utilizador
         .single()
 
       if (!perfil) {
         setErro('Perfil não encontrado. Contacta o suporte.')
         await supabase.auth.signOut()
+        console.log(' Perfil não encontrado para o user_id:', data.user.id)
+        setLoading(false)
         return false
       }
       if (perfil.status === 'bloqueado') {
