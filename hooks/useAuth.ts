@@ -48,7 +48,7 @@ export function useAuth() {
         if (perfil.tipo === 'admin') router.push('/admin')
         else if (perfil.tipo === 'tecnico') router.push('/tecnico/dashboard')
         else router.push('/cliente/dashboard')
-        setLoading(false)
+        setLoading(false) // Garantir que o loading é desativado após a navegação
       }, 300)
       return true
     } catch {
