@@ -12,23 +12,23 @@ export default function AdminDashboard() {
     async function carregar() {
       const supabase = createClient()
 
-      const { data: clientes } = await supabase
-        .from('perfis').select('id').eq('tipo', 'cliente')
-      const { data: tecnicos } = await supabase
-        .from('perfis').select('id').eq('tipo', 'tecnico')
-      const { data: agendamentos } = await supabase
-        .from('agendamentos').select('id')
+      // Apenas contar pendentes (que já funciona)
       const { data: pendentes } = await supabase
-        .from('tecnicos').select('id').eq('status_verificacao', 'aguardando')
+        .from('tecnicos')
+        .select('id')
+        .eq('status_verificacao', 'aguardando')
+      
       const { data: selos } = await supabase
-        .from('pedidos_selo').select('id').eq('status', 'pendente')
+        .from('pedidos_selo')
+        .select('id')
+        .eq('status', 'pendente')
+      
       const { data: denuncias } = await supabase
-        .from('denuncias').select('id').eq('status', 'pendente')
+        .from('denuncias')
+        .select('id')
+        .eq('status', 'pendente')
 
       setStats({
-        clientes: clientes?.length || 0,
-        tecnicos: tecnicos?.length || 0,
-        agendamentos: agendamentos?.length || 0,
         pendentes: pendentes?.length || 0,
         selos: selos?.length || 0,
         denuncias: denuncias?.length || 0,
@@ -44,6 +44,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="bg-servi-600 px-4 py-6">
         <div className="max-w-2xl mx-auto">
           <p className="text-servi-200 text-sm">Painel do administrador</p>
@@ -61,55 +62,58 @@ export default function AdminDashboard() {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
 
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: 'Clientes', valor: stats?.clientes, cor: 'text-servi-600' },
-            { label: 'Técnicos', valor: stats?.tecnicos, cor: 'text-ja-500' },
-            { label: 'Serviços', valor: stats?.agendamentos, cor: 'text-green-600' },
-          ].map(s => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 text-center">
-              <p className={`font-bold text-2xl ${s.cor}`}>{s.valor}</p>
-              <p className="text-xs text-gray-500">{s.label}</p>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="font-bold text-gray-900 mb-3">Acções urgentes</h2>
+        {/* Ações urgentes */}
+        <h2 className="font-bold text-gray-900 mb-3">✅ Ações urgentes</h2>
         <div className="flex flex-col gap-3 mb-6">
-          {[
-            { href: '/admin/tecnicos', icone: '🔧', label: 'Aprovar técnicos', count: stats?.pendentes, cor: 'text-ja-500' },
-            { href: '/admin/selos', icone: '🏆', label: 'Pedidos de selo', count: stats?.selos, cor: 'text-yellow-600' },
-            { href: '/admin/denuncias', icone: '🚨', label: 'Denúncias pendentes', count: stats?.denuncias, cor: 'text-red-600' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{item.icone}</span>
-                <span className="font-medium text-gray-900 text-sm">{item.label}</span>
-              </div>
-              {item.count > 0 && (
-                <span className={`font-bold text-lg ${item.cor}`}>{item.count}</span>
-              )}
-            </Link>
-          ))}
+          <Link href="/admin/tecnicos" className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between hover:border-servi-200 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔧</span>
+              <span className="font-medium text-gray-900">Aprovar técnicos</span>
+            </div>
+            {stats?.pendentes > 0 && (
+              <span className="bg-ja-100 text-ja-700 px-2 py-1 rounded-full text-xs font-bold">{stats.pendentes}</span>
+            )}
+          </Link>
+
+          <Link href="/admin/selos" className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between hover:border-servi-200 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              <span className="font-medium text-gray-900">Pedidos de selo</span>
+            </div>
+            {stats?.selos > 0 && (
+              <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold">{stats.selos}</span>
+            )}
+          </Link>
+
+          <Link href="/admin/denuncias" className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between hover:border-servi-200 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🚨</span>
+              <span className="font-medium text-gray-900">Denúncias pendentes</span>
+            </div>
+            {stats?.denuncias > 0 && (
+              <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">{stats.denuncias}</span>
+            )}
+          </Link>
         </div>
 
-        <h2 className="font-bold text-gray-900 mb-3">Gestão</h2>
+        <h2 className="font-bold text-gray-900 mb-3">📋 Gestão</h2>
         <div className="grid grid-cols-2 gap-3">
-          {[
-            { href: '/admin/clientes', icone: '👤', label: 'Clientes' },
-            { href: '/admin/tecnicos', icone: '🔧', label: 'Técnicos' },
-            { href: '/admin/agendamentos', icone: '📋', label: 'Agendamentos' },
-            { href: '/admin/avaliacoes', icone: '⭐', label: 'Avaliações' },
-            { href: '/admin/bloqueados', icone: '🔒', label: 'Bloqueados' },
-            { href: '/admin/estatisticas', icone: '📊', label: 'Estatísticas' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:border-servi-200 transition-colors">
-              <span className="text-2xl">{item.icone}</span>
-              <span className="font-medium text-gray-900 text-sm">{item.label}</span>
-            </Link>
-          ))}
+          <Link href="/admin/tecnicos" className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:border-servi-200 transition-colors">
+            <span className="text-2xl">🔧</span>
+            <span className="font-medium text-gray-900 text-sm">Técnicos</span>
+          </Link>
+          <Link href="/admin/clientes" className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:border-servi-200 transition-colors">
+            <span className="text-2xl">👤</span>
+            <span className="font-medium text-gray-900 text-sm">Clientes</span>
+          </Link>
+          <Link href="/admin/agendamentos" className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:border-servi-200 transition-colors">
+            <span className="text-2xl">📋</span>
+            <span className="font-medium text-gray-900 text-sm">Agendamentos</span>
+          </Link>
+          <Link href="/admin/bloqueados" className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:border-servi-200 transition-colors">
+            <span className="text-2xl">🔒</span>
+            <span className="font-medium text-gray-900 text-sm">Bloqueados</span>
+          </Link>
         </div>
       </div>
     </div>
