@@ -41,7 +41,7 @@ export default function SignUpPage() {
   function avancarPasso1(e: React.FormEvent) {
     e.preventDefault()
     setErroLocal(null)
-    
+
     if (password !== confirmar) {
       setErroLocal('As passwords não coincidem.')
       return
@@ -50,7 +50,7 @@ export default function SignUpPage() {
       setErroLocal('Password com mínimo 6 caracteres.')
       return
     }
-    
+
     if (tipo === 'tecnico') {
       setPasso(2)
     } else {
@@ -61,7 +61,6 @@ export default function SignUpPage() {
   async function handleRegistarCliente() {
     console.log('📝 A registar cliente...')
     const sucesso = await registar({ email, password, nome, telefone, tipo })
-    
     if (!sucesso) {
       console.log('❌ Registo falhou - ver erro acima')
     } else {
@@ -72,7 +71,7 @@ export default function SignUpPage() {
   async function handleSubmitTecnico(e: React.FormEvent) {
     e.preventDefault()
     setErroLocal(null)
-    
+
     if (!categoria) {
       setErroLocal('Escolhe a tua categoria.')
       return
@@ -84,39 +83,76 @@ export default function SignUpPage() {
 
     console.log('📝 A registar técnico...')
     const sucesso = await registar({ email, password, nome, telefone, tipo })
-    
+
     if (sucesso) {
-      console.log('✅ A guardar dados do técnico...')
+      console.log('✅ Registo de autenticação OK')
       const supabase = createClient()
+
+      // Aguardar sessão e trigger
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
       const { data: { user } } = await supabase.auth.getUser()
-      
+      console.log('👤 User ID:', user?.id)
+
       if (user) {
-        // Aguardar o trigger criar o perfil
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        const { data: perfil } = await supabase
+        // Buscar o perfil criado pelo trigger
+        const { data: perfil, error: perfilError } = await supabase
           .from('perfis')
           .select('id')
           .eq('user_id', user.id)
           .single()
 
+        console.log('📋 Perfil encontrado:', perfil?.id, perfilError)
+
         if (perfil) {
-          await supabase.from('tecnicos').update({
-            categoria_principal_id: categoria,
-            bairro,
-            raio_atendimento_km: raio,
-          }).eq('perfil_id', perfil.id)
+          // INSERIR (não UPDATE) os dados do técnico
+          const { error: insertError } = await supabase
+            .from('tecnicos')
+            .insert({
+              perfil_id: perfil.id,
+              categoria_principal_id: categoria,
+              bairro: bairro,
+              raio_atendimento_km: raio,
+              status_verificacao: 'aguardando',
+              disponivel: true,
+              selo: 'novo'
+            })
+
+          if (insertError) {
+            console.error('❌ Erro ao inserir técnico:', insertError)
+            setErroLocal('Erro ao guardar dados profissionais. Contacta o suporte.')
+            return
+          }
+
+          console.log('✅ Técnico inserido com sucesso')
 
           if (numeroBi) {
-            await supabase.from('perfis')
+            await supabase
+              .from('perfis')
               .update({ documento_identidade: numeroBi })
               .eq('id', perfil.id)
+            console.log('✅ BI guardado')
           }
-          console.log('✅ Dados do técnico guardados')
+
+          // Abrir WhatsApp e redirecionar
+          window.open(
+            `https://wa.me/244938080177?text=Olá,%20registei-me%20como%20técnico.%20Nome:%20${encodeURIComponent(nome)}`,
+            '_blank'
+          )
+          // Aguardar abertura do WhatsApp
+          setTimeout(() => {
+            window.location.href = '/tecnico/verificacao'
+          }, 500)
+        } else {
+          console.error('❌ Perfil não encontrado para user_id:', user.id)
+          setErroLocal('Erro ao encontrar perfil. Tenta novamente.')
         }
+      } else {
+        console.error('❌ User não encontrado após registo')
+        setErroLocal('Erro ao obter dados do utilizador.')
       }
     } else {
-      console.log('❌ Registo de técnico falhou')
+      console.log('❌ Registo de técnico falhou na autenticação')
     }
   }
 
