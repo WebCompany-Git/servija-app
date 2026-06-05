@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  turbopack: {},
+  cacheComponents: false,  // Desativado temporariamente para compatibilidade com rotas dinâmicas
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
