@@ -1,4 +1,4 @@
-import PerfilTecnicoClient from './PerfilTecnicoClient'
+import PerfilPublicoTecnicoClient from './PerfilPublicoTecnicoClient'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -7,5 +7,6 @@ interface PageProps {
 export default async function PerfilPublicoTecnico({ params }: PageProps) {
   const { id } = await params
   
-  return <PerfilTecnicoClient tecnicoId={id} />
+  // Envia a prop com nome 'id' (consistente com o componente cliente)
+  return <PerfilPublicoTecnicoClient id={id} />
 }
