@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: false,  // Desativado temporariamente para compatibilidade com rotas dinâmicas
+  cacheComponents: false,
+  
+  // Configuração para Turbopack (Vercel)
+  turbopack: {},
+  
+  // Configuração para Webpack (fallback local)
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -13,6 +18,8 @@ const nextConfig: NextConfig = {
     }
     return config
   },
+  
+  // Pacotes que precisam ser transpilados
   transpilePackages: ['leaflet', 'react-leaflet'],
 }
 
