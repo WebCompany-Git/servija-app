@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
@@ -9,10 +10,16 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
 
-        {/* Logo ServiJá */}
+        {/* Logo ServiJá com imagem */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-servi-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">SJ</span>
+          <div className="w-8 h-8 relative">
+            <Image
+              src="/logo.png"
+              alt="ServiJá"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
           </div>
           <span className="font-bold text-xl">
             <span className="text-servi-500">Servi</span>

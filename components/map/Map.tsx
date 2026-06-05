@@ -26,7 +26,6 @@ export default function Map({
 
   // Inicializar mapa apenas uma vez
   useEffect(() => {
-    // Se já inicializou ou não tem ref, sai
     if (inicializadoRef.current || !mapRef.current) return
 
     const initMap = async () => {
@@ -40,7 +39,6 @@ export default function Map({
           shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
         })
 
-        // Verificar se o container ainda existe e não tem mapa
         if (!mapRef.current || mapInstanceRef.current) return
 
         const map = L.map(mapRef.current).setView([lat, lng], 13)
@@ -50,6 +48,7 @@ export default function Map({
           maxZoom: 19,
         }).addTo(map)
 
+        // Marcador do cliente (moderno)
         const iconeCliente = L.divIcon({
           html: `<div style="width:16px;height:16px;background:#7c3aed;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`,
           className: '',
@@ -59,7 +58,7 @@ export default function Map({
 
         L.marker([lat, lng], { icon: iconeCliente })
           .addTo(map)
-          .bindPopup('<b>A tua localização</b>')
+          .bindPopup('<b>A sua localização</b>')
 
         mapInstanceRef.current = map
         inicializadoRef.current = true
@@ -77,7 +76,7 @@ export default function Map({
         inicializadoRef.current = false
       }
     }
-  }, [lat, lng])  // Só executa quando lat/lng mudam
+  }, [lat, lng])
 
   // Actualizar marcadores quando técnicos mudam
   useEffect(() => {
@@ -87,16 +86,16 @@ export default function Map({
       try {
         const L = await import('leaflet')
         
-        // Remover marcadores antigos
         marcadoresRef.current.forEach((m) => m.remove())
         marcadoresRef.current = []
 
-        // Adicionar novos marcadores
         tecnicos.forEach((t) => {
           if (!t.distancia_km) return
 
           const selecionado = tecnicoSeleccionado === t.id
-          const corSelo = {
+          
+          // Cor da borda do marcador baseada no selo
+          const corBorda = {
             top_servija: '#f59e0b',
             experiente_verificado: '#8b5cf6',
             verificado: '#16a34a',
@@ -104,12 +103,58 @@ export default function Map({
             novo: '#6b7280',
           }[t.selo] || '#6b7280'
 
+          // HTML do marcador com FOTO
+          const fotoUrl = t.foto_url || ''
+          const temFoto = fotoUrl && fotoUrl !== ''
+          
+          const iconeHtml = `
+            <div style="
+              position: relative;
+              width: 48px;
+              height: 48px;
+              background: white;
+              border-radius: 50%;
+              border: 3px solid ${corBorda};
+              box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+              overflow: hidden;
+              cursor: pointer;
+              transition: transform 0.2s;
+            ">
+              ${temFoto ? `
+                <img 
+                  src="${fotoUrl}" 
+                  alt="${t.nome_completo}" 
+                  style="width: 100%; height: 100%; object-fit: cover;"
+                  onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\"display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#8b5cf6;color:white;font-weight:bold;font-size:18px\">${t.nome_completo.charAt(0)}</div>'"
+                />
+              ` : `
+                <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#8b5cf6;color:white;font-weight:bold;font-size:18px">
+                  ${t.nome_completo.charAt(0)}
+                </div>
+              `}
+              <div style="
+                position: absolute;
+                bottom: -4px;
+                right: -4px;
+                background: ${corBorda};
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                border-radius: 10px;
+                padding: 2px 6px;
+                white-space: nowrap;
+              ">
+                ⭐ ${t.avaliacao_media > 0 ? t.avaliacao_media.toFixed(1) : 'Novo'}
+              </div>
+            </div>
+          `
+
           const icone = L.divIcon({
-            html: `<div style="background:${selecionado ? '#7c3aed' : corSelo};color:white;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:2px solid ${selecionado ? '#5b21b6' : 'white'};">
-              ⭐ ${t.avaliacao_media > 0 ? t.avaliacao_media.toFixed(1) : 'Novo'}
-            </div>`,
+            html: iconeHtml,
             className: '',
-            iconAnchor: [30, 15],
+            iconSize: [48, 48],
+            iconAnchor: [24, 48],
+            popupAnchor: [0, -48],
           })
 
           // Coordenadas ao redor do cliente
@@ -119,16 +164,20 @@ export default function Map({
           const marcador = L.marker([latT, lngT], { icon: icone })
             .addTo(mapInstanceRef.current)
             .bindPopup(`
-              <div style="min-width:150px">
-                <b>${t.nome_completo}</b><br/>
-                <span style="color:#6b7280;font-size:12px">${t.categoria}</span><br/>
-                <span style="color:#f59e0b">★</span>
-                <span style="font-size:12px">${t.avaliacao_media > 0 ? t.avaliacao_media.toFixed(1) : 'Sem avaliações'}</span>
-                <br/>
-                <span style="font-size:12px;color:#7c3aed">${t.distancia_km} km</span>
+              <div style="min-width:180px; text-align:center;">
+                <div style="font-weight:bold; margin-bottom:5px;">${t.nome_completo}</div>
+                <div style="color:#6b7280; font-size:12px; margin-bottom:5px;">${t.categoria}</div>
+                <div style="color:#f59e0b; font-size:12px; margin-bottom:5px;">⭐ ${t.avaliacao_media > 0 ? t.avaliacao_media.toFixed(1) : 'Sem avaliações'}</div>
+                <div style="color:#7c3aed; font-size:12px; margin-bottom:10px;">${t.distancia_km} km de distância</div>
+                <button onclick="window.location.href='/tecnico/${t.id}'" style="background:#8b5cf6; color:white; border:none; padding:6px 12px; border-radius:12px; cursor:pointer; font-size:12px; font-weight:bold;">
+                  Ver perfil →
+                </button>
               </div>
             `)
-            .on('click', () => onTecnicoClick(t.id))
+            .on('click', () => {
+              // Redirecionar diretamente para o perfil
+              window.location.href = `/tecnico/${t.id}`
+            })
 
           marcadoresRef.current.push(marcador)
         })

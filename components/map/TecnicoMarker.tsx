@@ -1,5 +1,6 @@
 'use client'
 import type { Tecnico } from '@/hooks/useTecnicos'
+import { Star, CheckCircle, ThumbsUp, Award, Sparkles, MapPin, DollarSign } from 'lucide-react'
 
 interface Props {
   tecnico: Tecnico
@@ -8,15 +9,16 @@ interface Props {
 }
 
 const seloConfig = {
-  top_servija:           { emoji: '🏆', cor: 'bg-yellow-100 text-yellow-700' },
-  experiente_verificado: { emoji: '⭐', cor: 'bg-servi-100 text-servi-700' },
-  verificado:            { emoji: '✅', cor: 'bg-green-100 text-green-700' },
-  experiente:            { emoji: '👍', cor: 'bg-blue-100 text-blue-700' },
-  novo:                  { emoji: '🆕', cor: 'bg-gray-100 text-gray-600' },
+  top_servija:           { icone: Award, nome: 'Top ServiJá', cor: 'bg-yellow-100 text-yellow-700' },
+  experiente_verificado: { icone: Sparkles, nome: 'Exp. + Verificado', cor: 'bg-servi-100 text-servi-700' },
+  verificado:            { icone: CheckCircle, nome: 'Verificado', cor: 'bg-green-100 text-green-700' },
+  experiente:            { icone: ThumbsUp, nome: 'Experiente', cor: 'bg-blue-100 text-blue-700' },
+  novo:                  { icone: Award, nome: 'Novo', cor: 'bg-gray-100 text-gray-600' },
 }
 
 export default function TecnicoMarker({ tecnico, selecionado, onClick }: Props) {
   const selo = seloConfig[tecnico.selo as keyof typeof seloConfig] || seloConfig.novo
+  const IconeSelo = selo.icone
 
   return (
     <div
@@ -44,21 +46,31 @@ export default function TecnicoMarker({ tecnico, selecionado, onClick }: Props) 
           <p className="font-semibold text-gray-900 text-sm truncate">
             {tecnico.nome_completo}
           </p>
-          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${selo.cor}`}>
-            {selo.emoji}
+          <span className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${selo.cor}`}>
+            <IconeSelo className="w-3 h-3" />
+            <span>{selo.nome}</span>
           </span>
         </div>
         <p className="text-xs text-gray-500 truncate">{tecnico.categoria}</p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-yellow-500">★ {tecnico.avaliacao_media > 0 ? tecnico.avaliacao_media.toFixed(1) : 'Novo'}</span>
+          <div className="flex items-center gap-0.5">
+            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+            <span className="text-xs text-gray-600">{tecnico.avaliacao_media > 0 ? tecnico.avaliacao_media.toFixed(1) : 'Novo'}</span>
+          </div>
           <span className="text-xs text-gray-400">·</span>
-          <span className="text-xs text-servi-600">{tecnico.distancia_km} km</span>
+          <div className="flex items-center gap-0.5">
+            <MapPin className="w-3 h-3 text-servi-500" />
+            <span className="text-xs text-servi-600">{tecnico.distancia_km} km</span>
+          </div>
           {tecnico.preco_base && (
             <>
               <span className="text-xs text-gray-400">·</span>
-              <span className="text-xs text-gray-600">
-                {tecnico.preco_base.toLocaleString()} Kz
-              </span>
+              <div className="flex items-center gap-0.5">
+                <DollarSign className="w-3 h-3 text-gray-500" />
+                <span className="text-xs text-gray-600">
+                  {tecnico.preco_base.toLocaleString()} Kz
+                </span>
+              </div>
             </>
           )}
         </div>
